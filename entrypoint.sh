@@ -94,7 +94,7 @@ case "$tag_context" in
         exit 1;;
 esac
 
-echo -e "------all git_refs=${$git_refs}"
+echo -e "------all git_refs=$git_refs"
 echo -e "------all preTagFmt=${preTagFmt}"
 # get the latest tag that looks like a semver (with or without v)
 matching_tag_refs=$( (grep -E "$tagFmt" <<< "$git_refs") || true)
