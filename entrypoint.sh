@@ -196,35 +196,36 @@ then
         setOutput "tag" "$pre_tag"
         exit 0
     fi
-    # already a pre-release available, bump it
-    if [[ "$pre_tag" =~ $new ]] && [[ "$pre_tag" =~ $suffix ]]
+
+    if [[ "$override_prerelease" ]]
     then
-        if [[ "$override_prerelease" ]]
-        then
-          if $with_v
-          then
-              new="v$new-$suffix"
-          else
-              new="$new-$suffix"
-          fi
-          echo -e "Setting ${suffix} pre-tag ${pre_tag} - With pre-tag ${new}"
-        else
-          if $with_v
-          then
-              new=v$(semver -i prerelease "${pre_tag}" --preid "${suffix}")
-          else
-              new=$(semver -i prerelease "${pre_tag}" --preid "${suffix}")
-          fi
-          echo -e "Bumping ${suffix} pre-tag ${pre_tag}. New pre-tag ${new}"
-        fi
+      if $with_v
+      then
+          new="v$new-$suffix"
+      else
+          new="$new-$suffix"
+      fi
+      echo -e "Setting ${suffix} pre-tag ${pre_tag} - With pre-tag ${new}"
+    # already a pre-release available, bump it
     else
+      if [[ "$pre_tag" =~ $new ]] && [[ "$pre_tag" =~ $suffix ]]
+      then
         if $with_v
         then
-            new="v$new-$suffix.0"
+            new=v$(semver -i prerelease "${pre_tag}" --preid "${suffix}")
         else
-            new="$new-$suffix.0"
+            new=$(semver -i prerelease "${pre_tag}" --preid "${suffix}")
         fi
-        echo -e "Setting ${suffix} pre-tag ${pre_tag} - With pre-tag ${new}"
+        echo -e "Bumping ${suffix} pre-tag ${pre_tag}. New pre-tag ${new}"
+      else
+          if $with_v
+          then
+              new="v$new-$suffix.0"
+          else
+              new="$new-$suffix.0"
+          fi
+          echo -e "Setting ${suffix} pre-tag ${pre_tag} - With pre-tag ${new}"
+      fi
     fi
     part="pre-$part"
 else
