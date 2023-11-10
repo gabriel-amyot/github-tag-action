@@ -95,7 +95,9 @@ esac
 
 # get the latest tag that looks like a semver (with or without v)
 matching_tag_refs=$( (grep -E "$tagFmt" <<< "$git_refs") || true)
+echo -e "matching_tag_refs ${matching_tag_refs}"
 matching_pre_tag_refs=$( (grep -E "$preTagFmt" <<< "$git_refs") || true)
+echo -e "matching_pre_tag_refs ${matching_pre_tag_refs}"
 tag=$(head -n 1 <<< "$matching_tag_refs")
 pre_tag=$(head -n 1 <<< "$matching_pre_tag_refs")
 
@@ -195,6 +197,13 @@ then
         exit 0
     fi
     # already a pre-release available, bump it
+    echo -e "suffix ${suffix}"
+    echo -e "pre-tag ${pre-tag}"
+    echo -e "new ${new}"
+
+    echo -e "potential new tag $(semver -i prerelease "${pre_tag}" --preid "${suffix}")"
+
+
     if [[ "$pre_tag" =~ $new ]] && [[ "$pre_tag" =~ $suffix ]]
     then
         if $with_v
