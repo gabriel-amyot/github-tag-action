@@ -79,6 +79,7 @@ git fetch --tags
 
 tagFmt="^v?[0-9]+\.[0-9]+\.[0-9]+$"
 preTagFmt="^v?[0-9]+\.[0-9]+\.[0-9]+(-$suffix\.[0-9]+)$"
+preTagFmt2="^v?\d+(\.\d+){2}(-[\w.-]+)?(_([\w.-]+(\.[\w.-]+)*)\.\d+)?$"
 
 # get the git refs
 git_refs=
@@ -98,7 +99,9 @@ echo -e "------all preTagFmt=${preTagFmt}"
 # get the latest tag that looks like a semver (with or without v)
 matching_tag_refs=$( (grep -E "$tagFmt" <<< "$git_refs") || true)
 echo -e "------matching_tag_refs=${matching_tag_refs}"
-matching_pre_tag_refs=$( (grep -E "$preTagFmt" <<< "$git_refs") || true)
+matching_pre_tag_refsOld=$( (grep -E "$preTagFmt" <<< "$git_refs") || true)
+echo -e "------matching_pre_tag_refs=${matching_pre_tag_refs}"
+matching_pre_tag_refs=$( (grep -E "$preTagFmt2" <<< "$git_refs") || true)
 echo -e "------matching_pre_tag_refs=${matching_pre_tag_refs}"
 tag=$(head -n 1 <<< "$matching_tag_refs")
 echo -e "------tag=${tag}"
