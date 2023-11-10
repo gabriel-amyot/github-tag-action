@@ -15,6 +15,7 @@ initial_version=${INITIAL_VERSION:-0.0.0}
 tag_context=${TAG_CONTEXT:-repo}
 prerelease=${PRERELEASE:-false}
 suffix=${PRERELEASE_SUFFIX:-beta}
+override_prerelease=${OVERRIDE_PRERELEASE:false}
 verbose=${VERBOSE:-false}
 major_string_token=${MAJOR_STRING_TOKEN:-#major}
 minor_string_token=${MINOR_STRING_TOKEN:-#minor}
@@ -39,6 +40,7 @@ echo -e "\tINITIAL_VERSION: ${initial_version}"
 echo -e "\tTAG_CONTEXT: ${tag_context}"
 echo -e "\tPRERELEASE: ${prerelease}"
 echo -e "\tPRERELEASE_SUFFIX: ${suffix}"
+echo -e "\tOVERRIDE_PRERELEASE: ${$override_prerelease]}"
 echo -e "\tVERBOSE: ${verbose}"
 echo -e "\tMAJOR_STRING_TOKEN: ${major_string_token}"
 echo -e "\tMINOR_STRING_TOKEN: ${minor_string_token}"
@@ -197,13 +199,24 @@ then
     # already a pre-release available, bump it
     if [[ "$pre_tag" =~ $new ]] && [[ "$pre_tag" =~ $suffix ]]
     then
-        if $with_v
+        if [[ "$override_prerelease" ]]
         then
-            new=v$(semver -i prerelease "${pre_tag}" --preid "${suffix}")
+          if $with_v
+          then
+              new="v$new-$suffix"
+          else
+              new="$new-$suffix"
+          fi
+          echo -e "Setting ${suffix} pre-tag ${pre_tag} - With pre-tag ${new}"
         else
-            new=$(semver -i prerelease "${pre_tag}" --preid "${suffix}")
+          if $with_v
+          then
+              new=v$(semver -i prerelease "${pre_tag}" --preid "${suffix}")
+          else
+              new=$(semver -i prerelease "${pre_tag}" --preid "${suffix}")
+          fi
+          echo -e "Bumping ${suffix} pre-tag ${pre_tag}. New pre-tag ${new}"
         fi
-        echo -e "Bumping ${suffix} pre-tag ${pre_tag}. New pre-tag ${new}"
     else
         if $with_v
         then
@@ -238,6 +251,14 @@ setOutput "old_tag" "$tag"
 if $dryrun
 then
     exit 0
+fi
+
+if [[ $pre_release ]] && [[ "$override_prerelease" ]] then
+    existing_tag=$(git tag -l "$new")
+    if [[ -n "$existing_tag" ]] then
+          git tag -d "$new"
+          echo "Tag $new deleted"
+    fi
 fi
 
 echo "EVENT: creating local tag $new"
