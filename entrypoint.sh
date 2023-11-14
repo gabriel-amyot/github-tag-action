@@ -79,6 +79,7 @@ git fetch --tags
 
 tagFmt="^v?[0-9]+\.[0-9]+\.[0-9]+$"
 preTagFmt="^v?[0-9]+\.[0-9]+\.[0-9]+(-$suffix\.[0-9]+)$"
+preTagFmt2="^v?[0-9]+\.[0-9]+\.[0-9]+(-.*\.[0-9]+)$"
 
 # get the git refs
 git_refs=
@@ -93,12 +94,19 @@ case "$tag_context" in
         exit 1;;
 esac
 
+echo -e "------all git_refs=$git_refs"
+echo -e "------all preTagFmt=${preTagFmt}"
 # get the latest tag that looks like a semver (with or without v)
 matching_tag_refs=$( (grep -E "$tagFmt" <<< "$git_refs") || true)
-matching_pre_tag_refs=$( (grep -E "$preTagFmt" <<< "$git_refs") || true)
+echo -e "------matching_tag_refs=${matching_tag_refs}"
+matching_pre_tag_refsOld=$( (grep -E "$preTagFmt" <<< "$git_refs") || true)
+echo -e "------matching_pre_tag_refs_old=${matching_pre_tag_refs}"
+matching_pre_tag_refs=$( (grep -E "$preTagFmt2" <<< "$git_refs") || true)
+echo -e "------matching_pre_tag_refs=${matching_pre_tag_refs}"
 tag=$(head -n 1 <<< "$matching_tag_refs")
+echo -e "------tag=${tag}"
 pre_tag=$(head -n 1 <<< "$matching_pre_tag_refs")
-
+echo -e "------pre_tag=${pre_tag}"
 # if there are none, start tags at INITIAL_VERSION
 if [ -z "$tag" ]
 then
@@ -195,6 +203,13 @@ then
         exit 0
     fi
     # already a pre-release available, bump it
+    echo -e "-----suffix=${suffix}"
+    echo -e "-----pre-tag=${pre-tag}"
+    echo -e "-----new=${new}"
+
+    echo -e "potential new tag $(semver -i prerelease "${pre_tag}" --preid "${suffix}")"
+
+
     if [[ "$pre_tag" =~ $new ]] && [[ "$pre_tag" =~ $suffix ]]
     then
         if $with_v
